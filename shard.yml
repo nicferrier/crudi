@@ -1,0 +1,21 @@
+name: crudi
+version: 0.1.0
+
+authors:
+  - Nic Ferrier <nic@ferrier.me.uk>
+
+description: |
+ a Postgres based web Wiki/CMS
+
+targets:
+  crudi:
+    main: src/crudi.cr
+
+crystal: 0.23.1
+
+license: MIT
+
+dependencies:
+  pg:
+    github: will/crystal-pg
+    
