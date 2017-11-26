@@ -25,6 +25,10 @@ I expect there will be web based admin.
 
 Hack on it with crystal-lang.
 
+```crystal-lang
+crystal build src/crudi.cr
+```
+
 ## Contributing
 
 1. Fork it ( https://github.com/[your-github-name]/crudi/fork )
