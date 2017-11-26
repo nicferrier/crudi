@@ -1,18 +1,29 @@
-# crudi
+# CRUDi
 
-TODO: Write a description here
+CRUDi is an attempt to make a DB based Wiki.
+
+The idea is that a database can express the differences necessary in a
+web content system; for example, different tables might represent
+different types of content, one table for blog posts, another for
+project management tickets. The creation of such content requires
+different entry forms, so different display and handling.
+
+Tieing all this together is CRUDi's job.
+
 
 ## Installation
 
-TODO: Write installation instructions here
+CRUDi is written in crystal-lang right now. We will just make linux
+executables and also dockers.
 
 ## Usage
 
-TODO: Write usage instructions here
+I expect there will be web based admin.
+
 
 ## Development
 
-TODO: Write development instructions here
+Hack on it with crystal-lang.
 
 ## Contributing
 
@@ -24,4 +35,4 @@ TODO: Write development instructions here
 
 ## Contributors
 
-- [[your-github-name]](https://github.com/[your-github-name])  - creator, maintainer
+- [nicferrier](https://github.com/nicferrier)  - creator, maintainer
