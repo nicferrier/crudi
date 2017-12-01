@@ -40,7 +40,7 @@ I expect there will be web based admin.
 
 Hack on it with crystal-lang.
 
-```crystal-lang
+```shell
 crystal build src/crudi.cr
 ```
 
