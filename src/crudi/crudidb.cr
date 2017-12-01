@@ -1,8 +1,38 @@
 require "db"
 require "pg"
+require "json"
 
+# DB routines
 module CrudiDb
+
+  class WikiPage
+    JSON.mapping(
+      name: String,
+      id: Int32,
+      date: {type: Time, converter: Time::Format.new("%F %T")},
+      author: String,
+      content: JSON::Any
+    )
+
+    def initialize(@name : String,
+                   @id : Int32,
+                   @date : Time,
+                   @author : String,
+                   @content : JSON::Any)
+    end
+  end
   
+  def self.get_wiki(page) : WikiPage | Nil
+    DB.open "postgres://crudi@localhost/crudi" do |db|
+      res = db.query_one "SELECT id, date, author, content
+FROM wiki 
+WHERE name = $1
+ORDER BY id
+LIMIT 1",page, as: {Int32, Time, String, JSON::Any}
+      return WikiPage.new(page, res[0], res[1], res[2], res[3])
+    end
+  end
+
   def self.initdb
     DB.open "postgres://crudi@localhost/crudi" do |db|
       # Create tables and stuff
