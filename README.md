@@ -16,6 +16,21 @@ Tieing all this together is CRUDi's job.
 CRUDi is written in crystal-lang right now. We will just make linux
 executables and also dockers.
 
+
+## Wiki format
+
+The wiki format is JSON. Documents look like this:
+
+```
+[{"h1": {"this is a title"},
+ {"p": {"this is a paragraph"}]
+```
+
+in other words it's just HTML written as JSON objects in an array.
+
+I'll add more examples here as we code for them.
+
+
 ## Usage
 
 I expect there will be web based admin.
