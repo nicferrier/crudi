@@ -1,10 +1,7 @@
-function wikitext(textArray, domNode) {
-    console.log("text", textArray);
-    console.log("domNode", domNode);
+function wikiText(textArray, domNode) {
     textArray.forEach (e => {
 	var elementKeys = Object.keys(e);
 	elementKeys.forEach (k => {
-	    console.log("k", k);
 	    var element = document.createElement(k);
 	    element.innerText = e[k];
 	    document.importNode(element);
@@ -16,7 +13,7 @@ function wikitext(textArray, domNode) {
 function jsonWiki (jsonText, domNode) {
     const doc = JSON.parse(jsonText);
     const content = doc.content;
-    wikitext(content, domNode);
+    wikiText(content, domNode);
 }
 
 document.addEventListener("DOMContentLoaded", _ => {

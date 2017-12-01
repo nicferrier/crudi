@@ -16,9 +16,12 @@ module Crudi
            type: "text/css"
          }],
         [:script, {src: "wikitext.js"}]],
-       [:body, [
-          :div, {class: "wikitext"}
-        ]],
+       [:body,
+        [:div, {class: "wikitext"}],
+        [:form, {method: "POST",  action: "/page"},
+         [:input, {name: "name", placeholder: "wiki name", type: "text"}],
+         [:textarea, {name: "wikitext", placeholder: "your page here"}],
+         [:input, {type: "submit"}]]],
        [:script, {id: "wiki"},
         "var json_doc = `#{embeddable_doc}`;"]]]
   end
