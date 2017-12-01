@@ -5,3 +5,10 @@ body {
 input, textarea {
     display: block;
 }
+
+textarea {
+    width: 500px;
+    height: 100px;
+}
+
+/* styles.css ends here */

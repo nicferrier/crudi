@@ -21,15 +21,28 @@ module CrudiDb
                    @content : JSON::Any)
     end
   end
-  
+
   def self.get_wiki(page) : WikiPage | Nil
+    puts "CrudiDb.get_wiki getting #{page} from the db"
     DB.open "postgres://crudi@localhost/crudi" do |db|
       res = db.query_one "SELECT id, date, author, content
 FROM wiki 
 WHERE name = $1
-ORDER BY id
+ORDER BY id DESC
 LIMIT 1",page, as: {Int32, Time, String, JSON::Any}
       return WikiPage.new(page, res[0], res[1], res[2], res[3])
+    end
+  end
+
+  def self.add_wiki(name : String, content : JSON::Any)
+    DB.open "postgres://crudi@localhost/crudi" do |db|
+      json_str = content.to_pretty_json
+      db.exec(
+        "INSERT INTO wiki (id, author, name, content, date)
+VALUES (nextval('wiki_ids'), 'Crudi', $1, $2, now())",
+        name,
+        json_str
+      )
     end
   end
 
@@ -68,8 +81,13 @@ LIMIT 1",page, as: {Int32, Time, String, JSON::Any}
       ## db.exec "DELETE FROM wiki WHERE name='Main'"
 
       begin
-        id = db.query_one "SELECT id FROM wiki WHERE name = 'Main'", &.read(Int)
+        id = db.query_one "SELECT id 
+FROM wiki 
+WHERE name = 'Main'
+ORDER BY id DESC
+LIMIT 1", &.read(Int)
       rescue ex : DB::Error
+        puts "CrudiDb.initdb error for wiki table #{ex.message}"
         json = %q([{"h1": "Main page"}])
         db.exec "INSERT INTO wiki (id, author, name, content, date) 
 VALUES (nextval('wiki_ids'), 'Crudi', 'Main', $1, now())", json
