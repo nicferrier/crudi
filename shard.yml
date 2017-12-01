@@ -21,3 +21,6 @@ dependencies:
   db:
     github: crystal-lang/crystal-db
     version: ~> 0.4.1
+  crikey:
+    github: domgetter/crikey
+    

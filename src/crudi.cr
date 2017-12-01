@@ -3,8 +3,26 @@ require "db"
 require "pg"
 require "http/server"
 require "json"
+require "crikey"
 
 module Crudi
+  def self.wiki_page(doc)
+    embeddable_doc = doc.gsub("\"", "\\\"")
+    [:html, [
+       [:head,
+        [:link, {
+           rel: "stylesheet",
+           href: "styles.css",
+           type: "text/css"
+         }],
+        [:script, {src: "wikitext.js"}]],
+       [:body, [
+          :div, {class: "wikitext"}
+        ]],
+       [:script, {id: "wiki"},
+        "var json_doc = `#{embeddable_doc}`;"]]]
+  end
+
   def self.initroot
     server = HTTP::Server.new(
       "127.0.0.1",
@@ -12,28 +30,15 @@ module Crudi
       [HTTP::ErrorHandler.new, HTTP::StaticFileHandler.new("./www", true, false)]
     ) do |http|
       wikitext = CrudiDb.get_wiki("Main").to_pretty_json
-      embeddable = wikitext.gsub("\"", "\\\"")
+      doc = self.wiki_page wikitext
       http.response.content_type = "text/html"
-      http.response.print "<!DOCTYPE html>
-<html>
-<head>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\"/>
-<script src=\"wikitext.js\"></script>
-</head>
-<body>
-<div class=\"wikitext\">
-</div>
-</body>
-<script id=\"wiki\">
-var json_doc = `#{embeddable}`;
-</script>
-</html>"      
+      http.response.print Crikey.to_html(doc)
     end
   end
 end
 
 # main
-#CrudiDb.initdb
+CrudiDb.initdb
 
 puts "listening on 8001"
 Crudi.initroot.listen
