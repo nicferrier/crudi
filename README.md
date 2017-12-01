@@ -10,11 +10,15 @@ different entry forms, so different display and handling.
 
 Tieing all this together is CRUDi's job.
 
+## Git repositories
 
-## Installation
+Wiki, issues (or tickets, or whatever you want to call them) and
+source code are the 3 things that CRUDi will handle.
 
-CRUDi is written in crystal-lang right now. We will just make linux
-executables and also dockers.
+If it's going to be database based how will Git repos be handled?
+
+The answer is that we'll store git repos in PostgreSQL too. We'll do
+this through the magic of Linux's FUSE library system.
 
 
 ## Wiki format
@@ -29,6 +33,14 @@ The wiki format is JSON. Documents look like this:
 in other words it's just HTML written as JSON objects in an array.
 
 I'll add more examples here as we code for them.
+
+
+## Installation
+
+We will just make linux executables and also dockers, so you should be
+able to run it that way.
+
+CRUDi requires PostgreSQL 9.6.
 
 
 ## Usage
