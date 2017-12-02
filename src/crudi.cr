@@ -36,15 +36,41 @@ module Crudi
     puts "wiki_send called for #{page}"
     wikitext = CrudiDb.get_wiki(page)
     if wikitext.is_a?(Nil)
-      http.response.respond_with_error(
-        code=500,
-        message="an error occurred with your wiki markup"
-      )
+      http.response.respond_with_error "an error occurred with your wiki markup", 500
     else
       doc = self.wiki_page wikitext
       http.response.content_type = "text/html"
       http.response.status_code = 200
       http.response.print Crikey.to_html(doc)
+    end
+  end
+
+  def self.update_wiki(http)
+    body = http.request.body
+    if body.is_a?(Nil)
+      http.response.status_code = 400
+    elsif body.is_a?(IO)
+      body_data = body.gets_to_end
+      form_data = HTTP::Params.parse body_data
+      name = form_data["name"]
+      wiki_source = form_data["wikitext"]
+      doc = JSON.parse wiki_source
+      CrudiDb.add_wiki(name, doc)
+      http.response.status_code  = 302
+      http.response.headers["location"] = name
+    end
+  end
+
+  def self.get_wiki(http)
+    page = http.request.query_params["page"]
+    wikitext = CrudiDb.get_wiki(page)
+    if wikitext.is_a?(Nil)
+      http.response.respond_with_error "an error getting your wikitext", 500
+    else
+      http.response.content_type = "text/html"
+      http.response.status_code = 200
+      http.response.content_type = "application/json"
+      http.response.print wikitext.to_pretty_json
     end
   end
 
@@ -57,29 +83,15 @@ module Crudi
     ) do |http|
       case http.request.path
       when "/favicon.ico"
-        http.response.respond_with_error code=404, message="no icon"
+        http.response.respond_with_error "no icon", 404
       when "/page"
         case http.request.method
         when "GET"
-          http.response.status_code = 200
-          http.response.print "<h1>hello</h1>"
+          self.get_wiki http
         when "POST"
-          body = http.request.body
-          if body.is_a?(Nil)
-            http.response.status_code = 400
-          elsif body.is_a?(IO)
-            body_data = body.gets_to_end
-            form_data = HTTP::Params.parse body_data
-            name = form_data["name"]
-            wiki_source = form_data["wikitext"]
-            doc = JSON.parse wiki_source
-            CrudiDb.add_wiki(name, doc)
-            http.response.status_code  = 302
-            http.response.headers["location"] = name
-            #http.
-          end
+          self.update_wiki http
         else
-          http.response.respond_with_error code=405, message="not supported"
+          http.response.respond_with_error "not supported", 405
         end
       when "/"
         self.wiki_send http, "Main"
@@ -90,14 +102,12 @@ module Crudi
       end
     end
   end
+
 end
 
 # main
 CrudiDb.initdb
 puts "listening on 8001"
 Crudi.initroot.listen
-
-#doc = JSON.parse "[{\"h1\": \"hello\"},{\"p\": \"a paragraph\"}]"
-#CrudiDb.add_wiki("Main", doc)
 
 # crudi.cr ends here
