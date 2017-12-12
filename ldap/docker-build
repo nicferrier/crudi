@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd $(cd $(dirname $0) ;pwd)
+sudo docker build -t nicferrier/ldap-tools ldaputils
