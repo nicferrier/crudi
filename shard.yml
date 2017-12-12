@@ -18,6 +18,7 @@ license: MIT
 dependencies:
   pg:
     github: will/crystal-pg
+    commit: cafe58314bbbf0e6273963b1447e1c2fbeaf41ff # needed because of a change in crystal 0.24 that wasn't moved to trunk yet
   db:
     github: crystal-lang/crystal-db
     version: ~> 0.4.1

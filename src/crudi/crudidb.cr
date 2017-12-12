@@ -62,7 +62,7 @@ VALUES (nextval('wiki_ids'), 'Crudi', $1, $2, now())",
       res = db.query "SELECT id FROM route WHERE path = '/'"
       if ! res.move_next
         db.exec "INSERT INTO route (id, path, port)
- VALUES (nextval('route_ids'), ?, ?)", "/", 8001
+ VALUES (nextval('route_ids'), $1, $2)", "/", 8001
       end
 
       # Tables for wiki
