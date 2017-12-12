@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Pulls a server and starts it listening on port 9389
+
+sudo docker pull nickstenning/slapd
+sudo docker run -v /data/ldap:/var/lib/ldap \
+    -e LDAP_DOMAIN=ferrier.me.uk \
+    -e LDAP_ORGANISATION="Ferrier Me" \
+    -e LDAP_ROOTPASS=secret \
+    -p 389:9389 \
+    -d nickstenning/slapd
+
+# docker-server-run ends here
