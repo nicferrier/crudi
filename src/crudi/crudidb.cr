@@ -5,6 +5,13 @@ require "json"
 # DB routines
 module CrudiDb
 
+  class NotFound
+    JSON.mapping(name: String)
+
+    def initialize(@name : String)
+    end
+  end
+
   class WikiPage
     JSON.mapping(
       name: String,
@@ -22,15 +29,18 @@ module CrudiDb
     end
   end
 
-  def self.get_wiki(page) : WikiPage | Nil
-    puts "CrudiDb.get_wiki getting #{page} from the db"
+  def self.get_wiki?(page) : WikiPage | NotFound
     DB.open "postgres://crudi@localhost/crudi" do |db|
-      res = db.query_one "SELECT id, date, author, content
+      result = db.query_one? "SELECT id, date, author, content
 FROM wiki 
 WHERE name = $1
 ORDER BY id DESC
-LIMIT 1",page, as: {Int32, Time, String, JSON::Any}
-      return WikiPage.new(page, res[0], res[1], res[2], res[3])
+LIMIT 1", page, as: {Int32, Time, String, JSON::Any}
+      result.try do |res| 
+        return WikiPage.new(page, *res)
+      end
+      # Else we'll just return that we couldn't find it
+      return NotFound.new page
     end
   end
 

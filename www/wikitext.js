@@ -37,18 +37,33 @@ function wikiText(textArray, domNode) {
 }
 
 function jsonWiki (jsonText, domNode) {
+    console.log("jsonText", jsonText);
     let doc = JSON.parse(jsonText);
-    let content = doc.content;
-    wikiText(content, domNode);
     let form = document.querySelector(".editor");
-    form.querySelector("textarea").value = JSON.stringify(content, null, 2);
-    form.querySelector("input[name='name']").value = doc.name;
+    let nameInput = form.querySelector("input[name='name']");
+    let textArea = form.querySelector("textarea");
+    
+    if (doc.hasOwnProperty("content")) {
+        let content = doc.content;
+        wikiText(content, domNode);
+        textArea.value = JSON.stringify(content, null, 2);
+    }
+
+    if (doc.hasOwnProperty("name")) {
+        let name = doc.name;
+        nameInput.value = doc.name;
+    }
+
     form.addEventListener("submit", function (evt) {
 	let textarea = evt.target.elements["wikitext"];
 	let wikitext = textarea.value;
 	try {
-	    console.log("parsing it");
 	    JSON.parse(wikitext);
+            if (nameInput.value == null) {
+                throw "no doc name";
+            }
+            console.log("form ok!", form);
+            form.submit(); // not sure why I have to do this
 	    return true;
 	}
 	catch (e) {
@@ -73,7 +88,8 @@ function* styleRules(selectorMatch) {
 function save(jsonText) {
     let form = document.querySelector(".editor");
     form["wikitext"].value = jsonText;
-    form.submit();
+    let event = new Event("submit", {target: form});
+    form.dispatchEvent(event);
 }
 
 document.addEventListener("DOMContentLoaded", _ => {

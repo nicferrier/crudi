@@ -6,8 +6,21 @@ require "json"
 require "crikey"
 
 module Crudi
-  def self.wiki_page(doc : CrudiDb::WikiPage)
-    embeddable_doc = doc.to_json.gsub("\"", "\\\"")
+
+  def self.wiki_form
+    [:form, {class: "editor", method: "POST",  action: "/page"},
+     [:input, {name: "name", placeholder: "wiki name", type: "text"}],
+     [:textarea, {name: "wikitext", placeholder: "your page here"}],
+     [:input, {type: "submit"}]]
+  end
+
+  def self.wiki_page(doc : CrudiDb::WikiPage | CrudiDb::NotFound)
+    dom_class = "edit"
+    dom_class = "not-existing" if doc.is_a? CrudiDb::NotFound
+
+    doc_string = doc.to_json
+    json_obj = doc_string.gsub "\"", "\\\""
+
     [:html, 
      [[:head,
        [:link, {
@@ -20,29 +33,16 @@ module Crudi
       [:body,
        [:div, {class: "wikitext", contenteditable: false}],
        self.wiki_form],
-      [:script,
-       {id: "wiki"},
-       "var json_doc = `#{embeddable_doc}`;"]]]
-  end
-
-  def self.wiki_form
-    [:form, {class: "editor", method: "POST",  action: "/page"},
-     [:input, {name: "name", placeholder: "wiki name", type: "text"}],
-     [:textarea, {name: "wikitext", placeholder: "your page here"}],
-     [:input, {type: "submit"}]]
+      [:script, {id: "wiki", class: "#{dom_class}"},
+       "var json_doc = `#{json_obj}`;"]]]
   end
 
   def self.wiki_send(http, page)
-    puts "wiki_send called for #{page}"
-    wikitext = CrudiDb.get_wiki(page)
-    if wikitext.is_a?(Nil)
-      http.response.respond_with_error "an error occurred with your wiki markup", 500
-    else
-      doc = self.wiki_page wikitext
-      http.response.content_type = "text/html"
-      http.response.status_code = 200
-      http.response.print Crikey.to_html(doc)
-    end
+    wikitext = CrudiDb.get_wiki? page
+    doc = self.wiki_page wikitext
+    http.response.content_type = "text/html"
+    http.response.status_code = 200
+    http.response.print Crikey.to_html(doc)
   end
 
   def self.update_wiki(http)
@@ -63,14 +63,14 @@ module Crudi
 
   def self.get_wiki(http)
     page = http.request.query_params["page"]
-    wikitext = CrudiDb.get_wiki(page)
-    if wikitext.is_a?(Nil)
-      http.response.respond_with_error "an error getting your wikitext", 500
-    else
+    wikitext = CrudiDb.get_wiki? page
+    if wikitext.is_a?(CrudiDb::WikiPage)
       http.response.content_type = "text/html"
       http.response.status_code = 200
       http.response.content_type = "application/json"
       http.response.print wikitext.to_pretty_json
+    else
+      http.response.respond_with_error "an error getting your wikitext", 500
     end
   end
 
@@ -102,7 +102,6 @@ module Crudi
       end
     end
   end
-
 end
 
 # main
