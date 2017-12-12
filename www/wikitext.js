@@ -1,12 +1,38 @@
+import edit from "./wikiedit.js";
+
 function wikiText(textArray, domNode) {
     textArray.forEach (e => {
-	var elementKeys = Object.keys(e);
-	elementKeys.forEach (k => {
-	    var element = document.createElement(k);
-	    element.innerText = e[k];
-	    document.importNode(element, true);
-	    domNode.appendChild(element);
-	});
+        console.log("e is", e);
+        if (typeof e === "string") {
+            console.log("e is a string", e);
+            let textNode = document.createTextNode(e);
+            domNode.appendChild(textNode);
+        }
+        else {
+	    var elementKeys = Object.keys(e);
+	    elementKeys.forEach (k => {
+                console.log("k is", k, e[k], Array.isArray(e[k]));
+	        var element = document.createElement(k);
+                if (Array.isArray(e[k])) {
+                    wikiText(e[k], element);
+                }
+                else if (typeof e[k] === "object") {
+                    Object.keys(e[k]).forEach(n => {
+                        if (n == "_") {
+                            wikiText([e[k][n]], element);
+                        }
+                        else {
+                            element.setAttribute(n, e[k][n]);
+                        }
+                    });
+                }
+                else  {
+	            element.innerText = e[k];
+	            document.importNode(element, true);
+                }
+	        domNode.appendChild(element);
+	    });
+        }
     });
 }
 
@@ -44,113 +70,15 @@ function* styleRules(selectorMatch) {
     }
 }
 
-
-function htonChildrenToDoc (children) {
-    return Array.from(children).map(e => {
-        let tag = e.tagName;
-        let htonObj = {};
-        console.log("children", e.children);
-        htonObj[e.tagName] = e.textContent;
-        console.log("htonObj", htonObj);
-        return htonObj;
-    });
+function save(jsonText) {
+    let form = document.querySelector(".editor");
+    form["wikitext"].value = jsonText;
+    form.submit();
 }
-
-function hton () {
-    let d = document.querySelector("div.wikitext");
-    let htonDoc = htonChildrenToDoc(d.children);
-    console.log("doc", JSON.stringify(htonDoc, null, 2));
-    return htonDoc;
-}
-
-function commit() {
-    console.log("commit called");
-    formToggle();
-    hton();
-}
-
-
-let editor = {
-    heading: function (level) {
-        document.execCommand("formatBlock", false, "h" + level);
-    },
-    H1: function () {
-        editor.heading(1);
-    },
-    H2: function () {
-        editor.heading(2);
-    },
-    H3: function () {
-        editor.heading(3);
-    },
-    H4: function () {
-        editor.heading(4);
-    },
-    Para: function () {
-        document.execCommand("formatBlock", false, "P");
-    },
-    List: function () {
-        document.execCommand("insertUnorderedList", false, "NULL");
-    },
-    Link: function () {
-        document.execCommand("createLink", false, "http://blah");
-    },
-}
-
-const editorKeyMap = {
-    "ctrl_shift_digit1": editor.H1,
-    "ctrl_shift_digit3": editor.H3,
-    "ctrl_shift_digit4": editor.H4,
-    "ctrl_shift_digit0": editor.Para,
-    "ctrl_shift_digit8": editor.List,
-    "ctrl_shift_bracketright": editor.Link,
-    "ctrl_shift_keyz": commit
-};
-
-var keyMap = [{
-    "ctrl_shift_keye": formToggle,
-}];
-
-function keyboardInit () {
-    document.onkeypress = function (evt) {
-	let key = evt.code;
-	if (evt.shiftKey) {
-	    key = "shift_" + key.toLowerCase();
-	}
-	if (evt.altKey) {
-	    key = "alt_" + key;
-	}
-	if (evt.ctrlKey) {
-	    key = "ctrl_" + key;
-	}
-
-	console.log("key", key, evt);
-
-        let keymap = keyMap[keyMap.length - 1]; // Having this indirection allows us to push new keymaps and have them used
-	let fn = keymap[key];
-	if (typeof fn === "function") {
-	    fn();
-	}
-    };
-}
-
-function formToggle () {
-    let wikitext = document.querySelector("div.wikitext");
-    let toggleValue = wikitext.getAttribute("contenteditable") == "true";
-    if (toggleValue) {
-        keyMap.pop();
-    }
-    else {
-        keyMap.push(editorKeyMap);
-    }
-    wikitext.contentEditable = !toggleValue;
-    wikitext.focus();
-}
-
 
 document.addEventListener("DOMContentLoaded", _ => {
     jsonWiki(json_doc, document.querySelector(".wikitext"));
-    keyboardInit();
+    edit.keyboardInit(save);
 });
 
 // wikitext.js ends here

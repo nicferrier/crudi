@@ -16,7 +16,7 @@ module Crudi
           type: "text/css"
         }],
        [:link, {rel: "icon", href: "data:;base64,="}],
-       [:script, {src: "wikitext.js"}]],
+       [:script, {src: "wikitext.js", type: "module"}]],
       [:body,
        [:div, {class: "wikitext", contenteditable: false}],
        self.wiki_form],
