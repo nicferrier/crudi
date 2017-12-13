@@ -2,16 +2,16 @@ import edit from "./wikiedit.js";
 
 function wikiText(textArray, domNode) {
     textArray.forEach (e => {
-        console.log("e is", e);
+        // console.log("e is", e);
         if (typeof e === "string") {
-            console.log("e is a string", e);
+            // console.log("e is a string", e);
             let textNode = document.createTextNode(e);
             domNode.appendChild(textNode);
         }
         else {
 	    var elementKeys = Object.keys(e);
 	    elementKeys.forEach (k => {
-                console.log("k is", k, e[k], Array.isArray(e[k]));
+                // console.log("k is", k, e[k], Array.isArray(e[k]));
 	        var element = document.createElement(k);
                 if (Array.isArray(e[k])) {
                     wikiText(e[k], element);
