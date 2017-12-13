@@ -14,7 +14,9 @@ module Crudi
      [:input, {type: "submit"}]]
   end
 
-  def self.wiki_page(doc : CrudiDb::WikiPage | CrudiDb::NotFound)
+  alias MaybeWikiPage = CrudiDb::WikiPage | CrudiDb::NotFound
+
+  def self.wiki_page(doc : MaybeWikiPage)
     dom_class = "edit"
     dom_class = "not-existing" if doc.is_a? CrudiDb::NotFound
 
