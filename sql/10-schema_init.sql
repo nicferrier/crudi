@@ -3,11 +3,10 @@
 CREATE OR REPLACE FUNCTION schema_init () RETURNS void AS $$
 begin
     -- This is needed to stop crystal's pg lib barfing on the output
-    SET client_min_messages = error;
+    set client_min_messages = error;
     
     -- Routes
     CREATE SEQUENCE IF NOT EXISTS route_ids;
-    
     CREATE TABLE IF NOT EXISTS route ("id" INTEGER,
                                       "path" TEXT,
                                       "port" INTEGER);
@@ -20,13 +19,14 @@ begin
 
     -- Wiki
     CREATE SEQUENCE IF NOT EXISTS wiki_ids;
-    
     CREATE TABLE IF NOT EXISTS wiki ("id" INTEGER,
                                      "date" TIMESTAMP WITH TIME ZONE,
                                      "author" TEXT,
                                      "name" TEXT,
                                      "content" JSON);
 
+    -- The target of our materialized view of the current version of a table
+    CREATE TABLE IF NOT EXISTS wiki_page (LIKE wiki);
     PERFORM id FROM wiki WHERE name = 'Main' ORDER BY id DESC LIMIT 1;
     if not found then
         INSERT INTO wiki (id,
@@ -41,9 +41,13 @@ begin
                 now());
     end if;
 
+    DROP TRIGGER IF EXISTS wiki_page_capture ON wiki;
+    CREATE TRIGGER wiki_page_capture
+    AFTER INSERT OR UPDATE OR DELETE ON wiki
+    FOR EACH ROW EXECUTE PROCEDURE wiki_materialize();
+
     -- Tickets
     CREATE SEQUENCE IF NOT EXISTS ticket_ids;
-    
     CREATE TABLE IF NOT EXISTS ticket (id INTEGER,
                                        date TIMESTAMP WITH TIME ZONE,
                                        title TEXT,
@@ -63,7 +67,6 @@ begin
                 'nicferrier', 'nicferrier',
                 '{}', '{}');
     end if;
-
 END;
 $$ LANGUAGE plpgsql;
   

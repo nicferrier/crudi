@@ -3,6 +3,7 @@ require "pg"
 require "json"
 require "file"
 require "io"
+require "dir"
 
 # DB routines
 module CrudiDb
@@ -34,10 +35,8 @@ module CrudiDb
   def self.get_wiki?(page) : WikiPage | NotFound
     DB.open "postgres://crudi@localhost/crudi" do |db|
       result = db.query_one? "SELECT id, date, author, content
-FROM wiki 
-WHERE name = $1
-ORDER BY id DESC
-LIMIT 1", page, as: {Int32, Time, String, JSON::Any}
+FROM wiki_page
+WHERE name = $1", page, as: {Int32, Time, String, JSON::Any}
       result.try do |res| 
         return WikiPage.new(page, *res)
       end
@@ -47,6 +46,7 @@ LIMIT 1", page, as: {Int32, Time, String, JSON::Any}
   end
 
   def self.add_wiki(name : String, content : JSON::Any)
+    puts "CrudiDb.add_wiki #{name}"
     DB.open "postgres://crudi@localhost/crudi" do |db|
       json_str = content.to_pretty_json
       db.exec(
@@ -59,13 +59,21 @@ VALUES (nextval('wiki_ids'), 'Crudi', $1, $2, now())",
   end
 
   def self.initdb
-    file = File.open("init.sql")
-    doc = IO::Memory.new
-    IO.copy file, doc
-    
     DB.open "postgres://crudi@localhost/crudi" do |db|
-      # Create tables and stuff
-      db.exec doc.to_s
+      sql_dir = Dir.new("sql")
+      sql_dir.each do |dirEntry|
+        if dirEntry != "." && dirEntry != ".." && !dirEntry.ends_with?("~")
+          puts "CrudiDb.initdb executing #{dirEntry}"
+
+          file = File.open("sql/" + dirEntry)
+          doc = IO::Memory.new
+          IO.copy file, doc
+        end;
+        
+        # Execute it
+        db.exec doc.to_s
+      end
+
       db.exec "select schema_init();"
     end
   end
