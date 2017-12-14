@@ -1,9 +1,10 @@
--- -*- mode: sql-mode -*-
+-- -*- mode: sql -*-
 
 CREATE OR REPLACE FUNCTION schema_init () RETURNS void AS $$
 begin
+    -- This is needed to stop crystal's pg lib barfing on the output
     SET client_min_messages = error;
-
+    
     -- Routes
     CREATE SEQUENCE IF NOT EXISTS route_ids;
     
