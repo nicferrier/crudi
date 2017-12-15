@@ -108,7 +108,7 @@ let api = {
 	        key = "ctrl_" + key;
 	    }
 
-	    // console.log("key", key, evt, keyMap);
+	    console.log("key", key, evt, keyMap);
 
             let keymap = keyMap[keyMap.length - 1]; // Having this indirection allows us to push new keymaps and have them used
 	    let fn = keymap[key];
@@ -117,6 +117,13 @@ let api = {
 	    if (typeof fn === "function") {
 		// console.log("key>", key, fn);
 	        fn();
+		evt.preventDefault();
+	    }
+	    else {
+		fn = keymap["_default"];
+		if (typeof fn === "function") {
+		    fn(evt);
+		}
 		evt.preventDefault();
 	    }
         };
@@ -190,11 +197,22 @@ let editor = {
     quitEditor: function() {
 	editor.quitCommandMode();
 	api.formToggle();
+    },
+    insert: function (evt) {
+	document.execCommand("insertText", false, evt.key);
+    },
+    insertSlash: function () {
+	document.execCommand("insertText", false, "/");
+    },
+    insertPara: function () {
+	document.execCommand("insertParagraph", false, "NULL");
     }
 }
 
 const editorKeyMap = {
     "slash": editor.commandMode,
+    "enter": editor.insertPara,
+    "_default": editor.insert
 };
 
 const editorCommandKeyMap = {
@@ -208,8 +226,8 @@ const editorCommandKeyMap = {
     "semicolon": editor.Pre,
     "period": editor.quitCommandMode,
     "keyi": editor.Italics,
-    "keyq": editor.quitEditor
-    // we also need a / command
+    "keyq": editor.quitEditor,
+    "slash": editor.insertSlash
 };
 
 keyMap.push({
