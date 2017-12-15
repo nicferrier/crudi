@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION schema_init () RETURNS void AS $$
 begin
     -- This is needed to stop crystal's pg lib barfing on the output
     set client_min_messages = error;
-    
+
     -- Routes
     CREATE SEQUENCE IF NOT EXISTS route_ids;
     CREATE TABLE IF NOT EXISTS route ("id" INTEGER,
