@@ -2,8 +2,7 @@ CREATE OR REPLACE FUNCTION wiki_materialize () RETURNS trigger AS $$
 begin
     -- we should never have a delete
     if (TG_OP = 'DELETE') then
-        INSERT INTO emp_audit SELECT 'D', now(), user, OLD.*;
-        RETURN OLD;
+        raise exception 'a delete on the wiki';
     
     elsif (TG_OP = 'UPDATE' or TG_OP = 'INSERT') then
         -- A better strategy would be look up the details first
