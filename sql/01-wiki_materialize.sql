@@ -6,10 +6,11 @@ begin
         RETURN OLD;
     
     elsif (TG_OP = 'UPDATE' or TG_OP = 'INSERT') then
+        -- A better strategy would be look up the details first
+        -- and if we don't find them, insert them, otherwise update.
+        
         PERFORM id FROM wiki WHERE name = NEW.name;
         if FOUND then
-            -- A better strategy would be look up the details first
-            -- and if we find them, then to add them.
             DELETE FROM wiki_page WHERE name = NEW.name;
             
         end if;

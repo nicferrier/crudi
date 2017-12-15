@@ -17,7 +17,7 @@ begin
         VALUES (nextval('route_ids'), '/', 8001);
     end if;
 
-    -- Wiki
+    -- Wiki, the page store, the materialized view and the trigger joining them
     CREATE SEQUENCE IF NOT EXISTS wiki_ids;
     CREATE TABLE IF NOT EXISTS wiki ("id" INTEGER,
                                      "date" TIMESTAMP WITH TIME ZONE,
@@ -25,10 +25,18 @@ begin
                                      "name" TEXT,
                                      "content" JSON);
 
-    -- The target of our materialized view of the current version of a table
     CREATE TABLE IF NOT EXISTS wiki_page (LIKE wiki);
+
+    PERFORM tgname FROM pg_trigger WHERE tgname = 'wiki_page_capture';
+    if NOT FOUND then
+        CREATE TRIGGER wiki_page_capture
+        AFTER INSERT OR UPDATE OR DELETE ON wiki
+        FOR EACH ROW EXECUTE PROCEDURE wiki_materialize();
+    end if;
+
+    -- Now put some data in them
     PERFORM id FROM wiki WHERE name = 'Main' ORDER BY id DESC LIMIT 1;
-    if not found then
+    if NOT FOUND then
         INSERT INTO wiki (id,
                           author,
                           name,
@@ -41,11 +49,6 @@ begin
                 now());
     end if;
 
-    DROP TRIGGER IF EXISTS wiki_page_capture ON wiki;
-    CREATE TRIGGER wiki_page_capture
-    AFTER INSERT OR UPDATE OR DELETE ON wiki
-    FOR EACH ROW EXECUTE PROCEDURE wiki_materialize();
-
     -- Tickets
     CREATE SEQUENCE IF NOT EXISTS ticket_ids;
     CREATE TABLE IF NOT EXISTS ticket (id INTEGER,
@@ -57,7 +60,7 @@ begin
                                        comments JSON);
 
     PERFORM id FROM ticket WHERE title = 'First';
-    if not found then
+    if NOT FOUND then
         INSERT INTO ticket (id, date, title, 
                             author, assigned, 
                             description, comments) 
