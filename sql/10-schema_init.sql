@@ -34,6 +34,8 @@ begin
         FOR EACH ROW EXECUTE PROCEDURE wiki_materialize();
     end if;
 
+    PERFORM setup_rtrigger('wiki');
+
     -- Now put some data in them
     PERFORM id FROM wiki WHERE name = 'Main' ORDER BY id DESC LIMIT 1;
     if NOT FOUND then
@@ -55,20 +57,27 @@ begin
                                        date TIMESTAMP WITH TIME ZONE,
                                        title TEXT,
                                        author TEXT,
-                                       assigned TEXT,
                                        description JSON, 
                                        comments JSON);
+    CREATE TABLE IF NOT EXISTS ticket_detail (LIKE ticket);
 
+    PERFORM tgname FROM pg_trigger WHERE tgname = 'ticket_detail_capture';
+    if NOT FOUND then
+        CREATE TRIGGER ticket_detail_capture
+        AFTER INSERT OR UPDATE OR DELETE ON ticket
+        FOR EACH ROW EXECUTE PROCEDURE ticket_materialize();
+    end if;
+    
     PERFORM id FROM ticket WHERE title = 'First';
     if NOT FOUND then
-        INSERT INTO ticket (id, date, title, 
-                            author, assigned, 
-                            description, comments) 
-        VALUES (nextval('ticket_ids'),
-                now(),
-                'an example ticket',
-                'nicferrier', 'nicferrier',
-                '{}', '{}');
+        -- INSERT INTO ticket (id, date, title, 
+        --                     author, assigned, 
+        --                     description, comments) 
+        -- VALUES (nextval('ticket_ids'),
+        --         now(),
+        --         'an example ticket',
+        --         'nicferrier', 'nicferrier',
+        --         '{}', '{}');
     end if;
 END;
 $$ LANGUAGE plpgsql;
