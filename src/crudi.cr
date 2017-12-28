@@ -2,6 +2,7 @@ require "./crudi/*"
 require "db"
 require "pg"
 require "http/server"
+require "tempfile"
 require "json"
 require "crikey"
 
@@ -58,7 +59,7 @@ module Crudi
       wiki_source = form_data["wikitext"]
       doc = JSON.parse wiki_source
       CrudiDb.add_wiki(name, doc)
-      http.response.status_code  = 302
+      http.response.status_code = 302
       http.response.headers["location"] = name
     end
   end
@@ -74,6 +75,32 @@ module Crudi
     else
       http.response.respond_with_error "an error getting your wikitext", 500
     end
+  end
+
+  def self.upload_attached(http)
+    name = nil
+    file = nil
+    HTTP::FormData.parse(http.request) do |part|
+      case part.name
+      when "name"
+        name = part.body.gets_to_end
+        puts "name is #{name}"
+      when "file"
+        file = Tempfile.open("upload") do |file|
+          IO.copy(part.body, file)
+        end
+        http.response.status_code = 302
+        http.response.headers["location"] = "?name=#{file.path}"
+      end
+    end
+  end
+
+  def self.get_attached(http) ## totally unsafe
+    name = http.request.query_params["name"]
+    file = File.open(name) do |file|
+      IO.copy(file, http.response)
+    end
+    http.response.status_code = 200
   end
 
   def self.initroot
@@ -94,6 +121,13 @@ module Crudi
           self.update_wiki http
         else
           http.response.respond_with_error "not supported", 405
+        end
+      when "/attachment/image"
+        case http.request.method
+        when "POST"
+          self.upload_attached http
+        else
+          self.get_attached http
         end
       when "/"
         self.wiki_send http, "Main"

@@ -5,7 +5,6 @@ let saveFn = function (doc) {
     console.log("no saving here", JSON.stringify(doc, null, 2));
 };
 
-
 let api = {
     htonChildrenToDoc: function(children) {
         let arr = Array.from(children);
@@ -23,6 +22,11 @@ let api = {
                         "_": api.htonChildrenToDoc(e.childNodes)
                     };
                 }
+		else if (tag == "IMG") {
+		    htonObj[tag] = {
+			"src": e.getAttribute("src")
+		    };
+		}
                 else if (e.children.length == 0) {
                     htonObj[tag] = e.textContent;
                 }
@@ -132,6 +136,37 @@ let api = {
     save: function () {
 	let hton = api.htonStringify();
         saveFn(hton);
+    },
+    
+    pasteHandler: function(e) {
+	let items = e.clipboardData.items;
+	console.log("items", items);
+	for (let i = 0 ; i < items.length ; i++) {
+	    let item = items[i];
+	    if (item.type.indexOf("image") >= 0) {
+		let itemFile = item.getAsFile();
+		let formData = new FormData();
+		formData.append("file", itemFile);
+
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+		    if (this.readyState === this.DONE) {
+			let url = this.responseURL;
+			document.execCommand("insertImage", false, url);
+		    }
+		};
+		/*
+		xhr.onerror = function() {a
+		    console.log("paste - cannot connect to server.");
+		};
+		*/
+		xhr.open("POST", "/attachment/image");
+		xhr.send(formData);
+	    }
+	    else {
+		console.log("Ignoring non-image.");
+	    }
+	}
     }
 };
 

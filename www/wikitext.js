@@ -93,7 +93,9 @@ function save(jsonText) {
 }
 
 document.addEventListener("DOMContentLoaded", _ => {
-    jsonWiki(json_doc, document.querySelector(".wikitext"));
+    let editArea = document.querySelector(".wikitext");
+    editArea.addEventListener("paste", edit.pasteHandler);
+    jsonWiki(json_doc, editArea);
     edit.keyboardInit(save);
 });
 

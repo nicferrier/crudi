@@ -47,14 +47,18 @@ WHERE name = $1", page, as: {Int32, Time, String, JSON::Any}
 
   def self.add_wiki(name : String, content : JSON::Any)
     puts "CrudiDb.add_wiki #{name}"
-    DB.open "postgres://crudi@localhost/crudi" do |db|
-      json_str = content.to_pretty_json
-      db.exec(
-        "INSERT INTO wiki (id, author, name, content, date)
+    begin
+      DB.open "postgres://crudi@localhost/crudi" do |db|
+        json_str = content.to_pretty_json
+        db.exec(
+          "INSERT INTO wiki (id, author, name, content, date)
 VALUES (nextval('wiki_ids'), 'Crudi', $1, $2, now())",
-        name,
-        json_str
-      )
+          name,
+          json_str
+        )
+      end
+    rescue ex
+      puts "error #{ex}"
     end
   end
 
@@ -64,11 +68,11 @@ VALUES (nextval('wiki_ids'), 'Crudi', $1, $2, now())",
       sql_dir.each do |dirEntry|
         if dirEntry != "." && dirEntry != ".." && !dirEntry.ends_with?("~")
           puts "CrudiDb.initdb executing #{dirEntry}"
-
+          
           file = File.open("sql/" + dirEntry)
           doc = IO::Memory.new
           IO.copy file, doc
-        end;
+        end
         
         # Execute it
         db.exec doc.to_s
