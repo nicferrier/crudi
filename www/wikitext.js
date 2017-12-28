@@ -95,6 +95,7 @@ function save(jsonText) {
 document.addEventListener("DOMContentLoaded", _ => {
     let editArea = document.querySelector(".wikitext");
     editArea.addEventListener("paste", edit.pasteHandler);
+    document.addEventListener("click", edit.imageSizeHandler);
     jsonWiki(json_doc, editArea);
     edit.keyboardInit(save);
 });

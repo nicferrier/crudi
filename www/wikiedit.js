@@ -24,7 +24,9 @@ let api = {
                 }
 		else if (tag == "IMG") {
 		    htonObj[tag] = {
-			"src": e.getAttribute("src")
+			"src": e.getAttribute("src"),
+			"width": e.getAttribute("width"),
+			"height": e.getAttribute("height")
 		    };
 		}
                 else if (e.children.length == 0) {
@@ -140,7 +142,6 @@ let api = {
     
     pasteHandler: function(e) {
 	let items = e.clipboardData.items;
-	console.log("items", items);
 	for (let i = 0 ; i < items.length ; i++) {
 	    let item = items[i];
 	    if (item.type.indexOf("image") >= 0) {
@@ -165,6 +166,22 @@ let api = {
 	    }
 	    else {
 		console.log("Ignoring non-image.");
+	    }
+	}
+    },
+
+    imageSizeHandler: function (evt) {
+	if (evt.type == "click") {
+	    let images = Array.from(
+		document.querySelectorAll(".wikitext * img")
+	    );
+	    let target = images.find(e => e == evt.target);
+	    if (target) {
+		let aspectRatio = target.height / target.width;
+		let width = prompt("width");
+		let height = prompt("height", width * aspectRatio);
+		target.setAttribute("width", width);
+		target.setAttribute("height", height);
 	    }
 	}
     }
