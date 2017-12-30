@@ -20,7 +20,9 @@ dependencies:
     #github: will/crystal-pg
     #version: 0.14.0
     #commit: cafe58314bbbf0e6273963b1447e1c2fbeaf41ff # needed because of a change in crystal 0.24 that wasn't moved to trunk yet
-    path: /home/nicferrier/crystalwork/pgdriver
+    github: nicferrier/crystal-pg
+    branch: nicfix
+    #path: /home/nicferrier/crystalwork/pgdriver
 
   db:
     github: crystal-lang/crystal-db
