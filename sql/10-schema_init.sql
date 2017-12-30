@@ -36,6 +36,14 @@ begin
 
     PERFORM setup_rtrigger('wiki');
 
+    -- attachments
+    CREATE SEQUENCE IF NOT EXISTS attachment_ids;
+    CREATE TABLE IF NOT EXISTS attachment (id INTEGER,
+                                           date TIMESTAMP WITH TIME ZONE,
+                                           author TEXT,
+                                           data TEXT);
+    PERFORM setup_rtrigger('attachment');
+
     -- Now put some data in them
     PERFORM id FROM wiki WHERE name = 'Main' ORDER BY id DESC LIMIT 1;
     if NOT FOUND then
@@ -67,7 +75,7 @@ begin
         AFTER INSERT OR UPDATE OR DELETE ON ticket
         FOR EACH ROW EXECUTE PROCEDURE ticket_materialize();
     end if;
-    
+
     PERFORM id FROM ticket WHERE title = 'First';
     if NOT FOUND then
         -- INSERT INTO ticket (id, date, title, 
@@ -81,5 +89,5 @@ begin
     end if;
 END;
 $$ LANGUAGE plpgsql;
-  
+
 -- init.sql ends here

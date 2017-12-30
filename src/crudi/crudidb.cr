@@ -4,6 +4,7 @@ require "json"
 require "file"
 require "io"
 require "dir"
+require "base64"
 
 # DB routines
 module CrudiDb
@@ -62,10 +63,38 @@ VALUES (nextval('wiki_ids'), 'Crudi', $1, $2, now())",
     end
   end
 
+  def self.get_attachment(id : Int32, output : IO)
+    DB.open "postgres://crudi@localhost/crudi" do |db|
+      result = db.query_one?(
+        "SELECT date, data 
+FROM attachment 
+WHERE id = $1",
+        id, as: {Time, String})
+      result.try do |res|
+        data = res[1]
+        Base64.decode(data, output)
+      end
+    end
+  end
+
+  def self.add_attachment(author : String, data : IO) : Int32
+    blob = IO::Memory.new data.size
+    IO.copy(data, blob)
+    DB.open "postgres://crudi@localhost/crudi" do |db|
+      value = db.scalar(
+        "INSERT INTO attachment (id, date, author, data)
+VALUES (nextval('attachment_ids'), now(), $1, $2)
+RETURNING id",
+        author,
+        Base64.encode blob
+      ).as(Int32)
+    end
+  end
+
   def self.initdb
     DB.open "postgres://crudi@localhost/crudi" do |db|
-      sql_dir = Dir.new("sql")
-      sql_dir.each do |dirEntry|
+      sql_dir = Dir.new "sql"
+      sql_dir.each_child do |dirEntry|
         if dirEntry != "." && dirEntry != ".." && !dirEntry.ends_with?("~")
           puts "CrudiDb.initdb executing #{dirEntry}"
           

@@ -89,17 +89,29 @@ module Crudi
         file = Tempfile.open("upload") do |file|
           IO.copy(part.body, file)
         end
+        id = self.save_attached file.path
         http.response.status_code = 302
-        http.response.headers["location"] = "?name=#{file.path}"
+        http.response.headers["location"] = "?name=#{id}"
+      end
+    end
+  end
+
+  def self.save_attached(name : String)
+    file = File.open(name) do |file|
+      begin
+        id = CrudiDb.add_attachment("nicferrier", file)
+      rescue ex
+        puts "save_attached got an error with db #{ex}"
+        ex.inspect_with_backtrace(STDERR)
       end
     end
   end
 
   def self.get_attached(http) ## totally unsafe
     name = http.request.query_params["name"]
-    file = File.open(name) do |file|
-      IO.copy(file, http.response)
-    end
+    id = name.to_i
+    http.response.content_type = "image/png"
+    CrudiDb.get_attachment id, http.response
     http.response.status_code = 200
   end
 
