@@ -1,4 +1,5 @@
-require "./crudi/*"
+require "./crudi/crudidb"
+require "./crudi/baked-web"
 require "db"
 require "pg"
 require "http/server"
@@ -120,7 +121,8 @@ module Crudi
       "127.0.0.1",
       8001,
       [HTTP::ErrorHandler.new,
-       HTTP::StaticFileHandler.new("./www", true, false)]
+       HTTP::LogHandler.new,
+       BakedWeb::BakedHandler.new]
     ) do |http|
       case http.request.path
       when "/favicon.ico"
@@ -150,11 +152,33 @@ module Crudi
       end
     end
   end
+
+  def self.getit
+    # file = BakedWeb.get_file "wikiedit.js"
+    # puts "#{file}"
+
+    # file = BakedWeb.get_file "wikiedit.css"
+    # puts "#{file}"
+
+    # file = BakedWeb.get_file "10-schema_init.sql"
+    # puts "#{file}"
+
+    BakedWeb.get_www.each do |item|
+      puts "www file #{item.path}"
+    end
+    
+    list = BakedWeb.get_sql
+    list.each do |item|
+      puts "list of files? #{item.path}"
+    end
+  end
+
 end
 
 # main
+#Crudi.getit
 CrudiDb.initdb
-puts "listening on 8001"
+#puts "listening on 8001"
 Crudi.initroot.listen
 
 # crudi.cr ends here

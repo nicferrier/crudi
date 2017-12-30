@@ -21,8 +21,13 @@ dependencies:
     #version: 0.14.0
     #commit: cafe58314bbbf0e6273963b1447e1c2fbeaf41ff # needed because of a change in crystal 0.24 that wasn't moved to trunk yet
     path: /home/nicferrier/crystalwork/pgdriver
+
   db:
     github: crystal-lang/crystal-db
     version: ~> 0.4.4
+
   crikey:
     github: domgetter/crikey
+
+  baked_file_system:
+    github: schovi/baked_file_system

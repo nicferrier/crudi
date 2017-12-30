@@ -5,6 +5,7 @@ require "file"
 require "io"
 require "dir"
 require "base64"
+require "./baked-web"
 
 # DB routines
 module CrudiDb
@@ -93,20 +94,15 @@ RETURNING id",
 
   def self.initdb
     DB.open "postgres://crudi@localhost/crudi" do |db|
-      sql_dir = Dir.new "sql"
-      sql_dir.each_child do |dirEntry|
-        if dirEntry != "." && dirEntry != ".." && !dirEntry.ends_with?("~")
+      BakedWeb.get_sql.each do |dirEntry|
+        if dirEntry.path.ends_with? ".sql"
           puts "CrudiDb.initdb executing #{dirEntry}"
-          
-          file = File.open("sql/" + dirEntry)
-          doc = IO::Memory.new
-          IO.copy file, doc
-        end
-        
-        # Execute it
-        db.exec doc.to_s
-      end
+          doc = dirEntry.read
 
+          # Execute it
+          db.exec doc.to_s
+        end
+      end
       db.exec "select schema_init();"
     end
   end
