@@ -142,8 +142,7 @@ let api = {
     
     pasteHandler: function(e) {
 	let items = e.clipboardData.items;
-	for (let i = 0 ; i < items.length ; i++) {
-	    let item = items[i];
+	Array.from(items.length).forEach((item, i) => {
 	    if (item.type.indexOf("image") >= 0) {
 		let itemFile = item.getAsFile();
 		let formData = new FormData();
