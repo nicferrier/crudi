@@ -96,7 +96,7 @@ RETURNING id",
     DB.open "postgres://crudi@localhost/crudi" do |db|
       BakedWeb.get_sql.each do |dirEntry|
         if dirEntry.path.ends_with? ".sql"
-          puts "CrudiDb.initdb executing #{dirEntry}"
+          puts "CrudiDb.initdb executing #{dirEntry.path}"
           doc = dirEntry.read
 
           # Execute it
