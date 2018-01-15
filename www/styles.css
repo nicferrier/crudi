@@ -35,4 +35,8 @@ textarea {
     list-item: none;
 }
 
+code {
+    padding-left: 6px;
+}
+
 /* styles.css ends here */
