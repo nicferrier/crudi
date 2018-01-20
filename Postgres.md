@@ -1,7 +1,9 @@
 # Using postgres
 
-I manage most things just simply with files that we execute. The only
-odd thing is that I wrote something in crystal to execute the file.
+I manage most things just simply with files of sql that are executed.
+The only odd thing is that I wrote something in crystal to execute the
+file.
+
 
 ## Setting up clusters
 
@@ -31,3 +33,30 @@ Third and fourth clusters can follow on from there.
 ## Replication
 
 We use trigger based replication.
+
+
+### Avoiding split brain
+
+All unlogged tables, possibly a temp table
+
+For each server that we know about we add a table X${server-name}, eg:
+
+crudi A -> server A
+
+crudi B -> server B
+
+server A    server B
+table XA     table XA
+table XB      table XB
+
+
+crudi A can:
+
+* write a change to server A into table XA and wait for sync commit
+ * since we do sync replication each commit must arrive on the other side
+ * if the txn fails then we notice
+* monitor all other "X" tables for updates
+
+if crudi A sees writes going to XA but no write arriving on another
+table then we might have a split brain.
+
