@@ -92,8 +92,16 @@ RETURNING id",
     end
   end
 
+  def self.pgurl
+    begin
+      return ENV["PGURL"]
+    rescue
+      return "postgres://crudi@localhost/crudi"
+    end
+  end
+
   def self.initdb
-    DB.open "postgres://crudi@localhost/crudi" do |db|
+    DB.open pgurl() do |db|
       BakedWeb.get_sql.each do |dirEntry|
         if dirEntry.path.ends_with? ".sql"
           puts "CrudiDb.initdb executing #{dirEntry.path}"
