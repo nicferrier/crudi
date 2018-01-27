@@ -142,7 +142,7 @@ let api = {
     
     pasteHandler: function(e) {
 	let items = e.clipboardData.items;
-	Array.from(items.length).forEach((item, i) => {
+	Array.from(items).forEach((item, i) => {
 	    if (item.type.indexOf("image") >= 0) {
 		let itemFile = item.getAsFile();
 		let formData = new FormData();
@@ -166,7 +166,7 @@ let api = {
 	    else {
 		console.log("Ignoring non-image.");
 	    }
-	}
+	});
     },
 
     imageSizeHandler: function (evt) {
