@@ -1,5 +1,6 @@
 require "baked_file_system"
 require "http"
+require "file"
 
 module BakedWeb
 
@@ -79,17 +80,31 @@ module BakedWeb
       slashed = request_path.starts_with? "/" 
       asset_path = slashed ? request_path[1,request_path.size - 1] : request_path
 
-      asset = BakedWeb.get_www_file? asset_path
-      if asset.is_a? BakedWeb::NotFound
-        call_next context
+      file_asset_path = "www/#{asset_path}"
+
+      if File.exists? file_asset_path
+        puts "serving #{asset_path} from the file system"
+        send_file file_asset_path, context
       else
-        send asset, context
+        asset = BakedWeb.get_www_file? asset_path
+        if asset.is_a? BakedWeb::NotFound
+          call_next context
+        else
+          send asset, context
+        end
       end
     end
 
     def send(asset, context)
       context.response.content_type = mime_type(asset.path)
       data = asset.read.to_slice
+      context.response.content_length = data.size
+      context.response.write data
+    end
+
+    def send_file(file_path, context)
+      context.response.content_type = mime_type(file_path)
+      data = File.read(file_path).to_slice()
       context.response.content_length = data.size
       context.response.write data
     end
