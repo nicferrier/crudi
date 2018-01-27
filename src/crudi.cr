@@ -122,7 +122,7 @@ module Crudi
       8001,
       [HTTP::ErrorHandler.new,
        HTTP::LogHandler.new,
-       BakedWeb::BakedHandler.new]
+       BakedWeb::BakedHandler.new "www"]
     ) do |http|
       case http.request.path
       when "/favicon.ico"
@@ -178,7 +178,7 @@ end
 # main
 #Crudi.getit
 CrudiDb.initdb
-#puts "listening on 8001"
+puts "listening on 8001"
 Crudi.initroot.listen
 
 # crudi.cr ends here

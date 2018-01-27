@@ -50,8 +50,8 @@ module BakedWeb
   class BakedHandler
     include HTTP::Handler
 
-    def initialize()
-      @fallthrough = false
+    def initialize(@file_directory = "")
+      @fallthrough = true
       @directory_listing = false
     end
 
@@ -80,7 +80,7 @@ module BakedWeb
       slashed = request_path.starts_with? "/" 
       asset_path = slashed ? request_path[1,request_path.size - 1] : request_path
 
-      file_asset_path = "www/#{asset_path}"
+      file_asset_path = "#{@file_directory}/#{asset_path}"
 
       if File.exists? file_asset_path
         puts "serving #{asset_path} from the file system"
